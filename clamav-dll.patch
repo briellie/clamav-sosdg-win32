@@ -1,0 +1,18 @@
+diff -u --recursive -N clamav-devel/libclamav/main.c clamav-dll/libclamav/main.c
+--- clamav-devel/libclamav/main.c	1969-12-31 19:00:00.000000000 -0500
++++ clamav-dll/libclamav/main.c	2004-09-25 15:51:25.198611200 -0400
+@@ -0,0 +1,3 @@
++void main()
++{
++}
+--- clamav-dll/libclamav/Makefile.am.orig	2004-11-20 12:18:20.900144000 -0500
++++ clamav-dll/libclamav/Makefile.am	2004-11-20 12:17:39.080009600 -0500
+@@ -120,6 +120,7 @@
+ 	special.c \
+ 	special.h \
+ 	binhex.c \
+-	binhex.h
++	binhex.h \
++	main.c
+ 
+ lib_LTLIBRARIES = libclamav.la

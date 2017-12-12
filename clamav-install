@@ -1,0 +1,51 @@
+#!/bin/bash
+CLAMAV=/cygdrive/c/clamav-devel
+WINPATH=C:/clamav-devel
+MNTPATH=/mnt/clamav
+DOCFILES="NEWS README BUGS AUTHORS ChangeLog FAQ INSTALL COPYING*"
+DOCDIR="docs examples contrib test"
+DLLFILES="/bin/cygz.dll /bin/cyggmp-3.dll /bin/cygbz2-1.dll /bin/cygminires.dll" 
+#DLLFILES="$DLLFILES /bin/cygintl-3.dll /bin/cygiconv-2.dll"
+DLLFILES="$DLLFILES /bin/cygwin1.dll"
+CYGCLAMVER="4"
+CYGWINEXE="/bin/mount.exe /bin/umount.exe /usr/src/psmisc-21.5-3/src/killall.exe"
+#CLAMVERS=0.93.1
+#cd clamav-$CLAMVERS
+CWD=`pwd`
+echo "Installing ClamAV..."
+make install
+echo "Copying over the necessary DLL files that make ClamAV Work..."
+cp -f --remove-destination $DLLFILES $CYGWINEXE $CLAMAV/bin/
+#cp -f -v --remove-destination /bin/cygwin1-1.5.16.dll $CLAMAV/bin/cygwin1.dll
+cp --remove-destination libclamav/.libs/cygclamav-$CYGCLAMVER.dll-def libclamav/.libs/cygclamav-$CYGCLAMVER.dll-exp $CLAMAV/lib
+echo "Converting text files to standard Windows linefeeds..."
+mount -t $WINPATH $MNTPATH
+#cd ..
+for i in $DOCFILES; do
+	echo "Converting $i..."
+	rm -f $MNTPATH/$i
+	awk 1 $i > $MNTPATH/$i
+done
+umount $MNTPATH
+echo "Copying over documentation, example, and contrib directories..."
+cp -f --remove-destination -R $DOCDIR $CLAMAV
+#cd $CWD
+cp --remove-destination -R idletimeout.patch clamav-sosdg-1.patch clamav-dll.patch configure-clamav-win32 clamav-install "/cygdrive/c/installer scripts/clamav-devel.nsi" $CLAMAV/sosdg/
+find $CLAMAV -name CVS | xargs rm -fr
+find $CLAMAV -name ".svn" | xargs rm -fr
+find $CLAMAV -name ".cvsignore" | xargs rm -fr
+find $CLAMAV -name ".\#*" | xargs rm -fr
+chown -R Administrators:Users $CLAMAV
+echo "Stripping the applications of debugging symbols..."
+strip --strip-debug $CLAMAV/bin/{cygz.dll,cyggmp-3.dll,cygbz2-1.dll,cygminires.dll,cygclamav-$CYGCLAMVER.dll}
+strip $CLAMAV/bin/*.exe
+#strip --strip-debug $CLAMAV/bin/*.dll
+cd $CLAMAV/bin
+# Dont rebase cygwin1.dll
+#ls | grep -v "cygwin1.dll" > files
+#rebaseall -T files
+#rm -f files
+#rebase -b 0x70000000 -v cygwin1.dll
+cd $CWD
+rm -fr $CLAMAV/docs/clam.eps $CLAMAV/docs/*.tex $CLAMAV/docs/MacOSX
+echo "Done!"
